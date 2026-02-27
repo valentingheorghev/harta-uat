@@ -39,12 +39,13 @@ fetch('judete.geojson')
       onEachFeature: (feature, layer) => {
 
         // LABEL JUDEȚ (POATE IEȘI DIN POLIGON)
-        layer.bindTooltip(feature.properties.Judet, {
-          permanent: true,
-          direction: 'center',
-          className: 'label-judet',
-          opacity: 1
-        });
+        layer.bindTooltip(feature.properties.UAT, {
+  permanent: true,
+  direction: 'top',     // NU center
+  offset: [0, -8],      // MUTĂ UȘOR ÎN SUS
+  className: 'label-uat',
+  opacity: 1
+});
 
         // HOVER
         layer.on('mouseover', () => {
@@ -97,7 +98,6 @@ function afiseazaUAT(judetSelectat) {
           // LABEL UAT – PERMANENT, POATE IEȘI DIN POLIGON
           layer.bindTooltip(feature.properties.UAT, {
             permanent: true,
-            direction: 'center',
             className: 'label-uat',
             opacity: 1
           });
@@ -129,3 +129,4 @@ function afiseazaUAT(judetSelectat) {
       backBtn.style.display = 'block';
     });
 }
+
