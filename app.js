@@ -1,3 +1,11 @@
+function norm(txt) {
+  return txt
+    .toString()
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 // Inițializare hartă
 const map = L.map('map').setView([45.9, 24.9], 7);
 
@@ -71,14 +79,14 @@ function afiseazaUAT(judetSelectat) {
     .then(data => {
 
       layerUAT = L.geoJSON(data, {
-        filter: f => f.properties.Judet === judetSelectat,
+        filter: f => norm(f.properties.Judet) === norm(judetSelectat)
 
         style: {
-          color: '#fff',       // CONTUR ALB
-          weight: 0.7,
-          fillColor: '#ffe599',
-          fillOpacity: 0.85
-        },
+  color: '#000',      // CONTUR NEGRU
+  weight: 0.7,
+  fillColor: '#ffe599',
+  fillOpacity: 0.85
+},
 
         onEachFeature: (feature, layer) => {
 
@@ -125,3 +133,4 @@ function afiseazaUAT(judetSelectat) {
       backBtn.style.display = 'block';
     });
 }
+
