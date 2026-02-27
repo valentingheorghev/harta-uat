@@ -1,3 +1,4 @@
+// ================== UTILS ==================
 function norm(txt) {
   return txt
     .toString()
@@ -7,45 +8,45 @@ function norm(txt) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-// === HARTĂ ===
+// ================== HARTĂ ==================
 const map = L.map('map').setView([45.9, 24.9], 7);
 
-let layerJudete;
-let layerUAT;
+let layerJudete = null;
+let layerUAT = null;
 
 const backBtn = document.getElementById('backBtn');
 
-// === RESET ===
+// ================== RESET ==================
 backBtn.onclick = () => {
   if (layerUAT) map.removeLayer(layerUAT);
   if (layerJudete) layerJudete.addTo(map);
+
   map.setView([45.9, 24.9], 7);
   backBtn.style.display = 'none';
 };
 
-// === JUDEȚE ===
+// ================== JUDEȚE ==================
 fetch('judete.geojson')
   .then(r => r.json())
   .then(data => {
 
     layerJudete = L.geoJSON(data, {
       style: {
-        color: '#000',
-        weight: 1,
+        color: '#ffffff',      // contur alb
+        weight: 1.2,
         fillColor: '#6fa8dc',
-        fillOpacity: 0.85
+        fillOpacity: 0.9
       },
 
       onEachFeature: (feature, layer) => {
 
-        // LABEL JUDEȚ (POATE IEȘI DIN POLIGON)
-        layer.bindTooltip(feature.properties.UAT, {
-  permanent: true,
-  direction: 'top',     // NU center
-  offset: [0, -8],      // MUTĂ UȘOR ÎN SUS
-  className: 'label-uat',
-  opacity: 1
-});
+        // LABEL JUDEȚ – CENTRAT
+        layer.bindTooltip(feature.properties.Judet, {
+          permanent: true,
+          direction: 'center',
+          className: 'label-judet',
+          opacity: 1
+        });
 
         // HOVER
         layer.on('mouseover', () => {
@@ -58,11 +59,11 @@ fetch('judete.geojson')
         layer.on('mouseout', () => {
           layer.setStyle({
             fillColor: '#6fa8dc',
-            weight: 1
+            weight: 1.2
           });
         });
 
-        // CLICK
+        // CLICK → UAT
         layer.on('click', () => {
           map.fitBounds(layer.getBounds(), { padding: [20, 20] });
           afiseazaUAT(feature.properties.Judet);
@@ -71,7 +72,7 @@ fetch('judete.geojson')
     }).addTo(map);
   });
 
-// === UAT ===
+// ================== UAT ==================
 function afiseazaUAT(judetSelectat) {
 
   if (layerJudete) map.removeLayer(layerJudete);
@@ -82,22 +83,23 @@ function afiseazaUAT(judetSelectat) {
     .then(data => {
 
       layerUAT = L.geoJSON(data, {
-
-        // 🔴 FILTRARE STRICTĂ
-        filter: f => norm(f.properties.Judet) === norm(judetSelectat),
+        filter: f =>
+          norm(f.properties.Judet) === norm(judetSelectat),
 
         style: {
-          color: '#000',
-          weight: 0.7,
+          color: '#000000',     // contur negru
+          weight: 0.8,
           fillColor: '#ffe599',
-          fillOpacity: 0.85
+          fillOpacity: 0.9
         },
 
         onEachFeature: (feature, layer) => {
 
-          // LABEL UAT – PERMANENT, POATE IEȘI DIN POLIGON
+          // LABEL UAT – SUS, POATE IEȘI DIN POLIGON
           layer.bindTooltip(feature.properties.UAT, {
             permanent: true,
+            direction: 'top',
+            offset: [0, -6],
             className: 'label-uat',
             opacity: 1
           });
@@ -113,7 +115,7 @@ function afiseazaUAT(judetSelectat) {
           layer.on('mouseout', () => {
             layer.setStyle({
               fillColor: '#ffe599',
-              weight: 0.7
+              weight: 0.8
             });
           });
 
@@ -129,4 +131,3 @@ function afiseazaUAT(judetSelectat) {
       backBtn.style.display = 'block';
     });
 }
-
