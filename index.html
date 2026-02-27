@@ -9,10 +9,33 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <style>
-    /* HARTA */
-    #map {
-      height: 100vh;
-    }
+   /* HARTA */
+#map {
+  height: 100vh;
+}
+
+/* LABEL SIMPLU */
+.label-judet,
+.label-uat {
+  color: #000;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  white-space: nowrap;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* JUDEȚ */
+.label-judet {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* UAT */
+.label-uat {
+  font-size: 9px;
+}
 
     /* BUTON INAPOI */
     #backBtn {
@@ -76,4 +99,5 @@
   <script src="app.js"></script>
 </body>
 </html>
+
 
