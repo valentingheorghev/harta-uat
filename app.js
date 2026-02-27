@@ -1,15 +1,12 @@
-// 1. Inițializăm harta
-const map = L.map('map', {
-  zoomControl: true
-}).setView([45.9, 24.9], 7);
+// Inițializare hartă
+const map = L.map('map').setView([45.9, 24.9], 7);
 
-// Layer-e
 let layerJudete;
 let layerUAT;
 
 const backBtn = document.getElementById('backBtn');
 
-// Reset la județe
+// === RESET LA JUDEȚE ===
 backBtn.onclick = () => {
   if (layerUAT) map.removeLayer(layerUAT);
   if (layerJudete) layerJudete.addTo(map);
@@ -23,53 +20,45 @@ fetch('judete.geojson')
   .then(data => {
 
     layerJudete = L.geoJSON(data, {
-
       style: {
-        color: '#333',
-        weight: 1,
+        color: '#fff',          // CONTUR ALB
+        weight: 1.2,
         fillColor: '#6fa8dc',
-        fillOpacity: 0.7
+        fillOpacity: 0.85
       },
 
       onEachFeature: (feature, layer) => {
 
-        // LABEL PERMANENT JUDEȚ
-        layer.bindTooltip(
-          feature.properties.Judet,
-          {
-            permanent: true,
-            direction: 'center',
-            className: 'label-judet'
-          }
-        );
+        // LABEL JUDEȚ
+        layer.bindTooltip(feature.properties.Judet, {
+          permanent: true,
+          direction: 'center',
+          className: 'label-judet'
+        });
 
-        // HOVER JUDEȚ
+        // HOVER ANIMAT
         layer.on('mouseover', () => {
           layer.setStyle({
-            fillColor: '#3d85c6',
-            fillOpacity: 0.9
+            fillOpacity: 1,
+            weight: 2
           });
         });
 
         layer.on('mouseout', () => {
           layer.setStyle({
-            fillColor: '#6fa8dc',
-            fillOpacity: 0.7
+            fillOpacity: 0.85,
+            weight: 1.2
           });
         });
 
         // CLICK JUDEȚ
         layer.on('click', () => {
-          map.fitBounds(layer.getBounds());
+          map.fitBounds(layer.getBounds(), { padding: [20, 20] });
           afiseazaUAT(feature.properties.Judet);
         });
-
       }
-
     }).addTo(map);
-
   });
-
 
 // === UAT ===
 function afiseazaUAT(judetSelectat) {
@@ -82,40 +71,38 @@ function afiseazaUAT(judetSelectat) {
     .then(data => {
 
       layerUAT = L.geoJSON(data, {
-
         filter: f => f.properties.Judet === judetSelectat,
 
         style: {
-          color: '#666',
-          weight: 0.6,
+          color: '#fff',       // CONTUR ALB
+          weight: 0.7,
           fillColor: '#ffe599',
-          fillOpacity: 0.75
+          fillOpacity: 0.85
         },
 
         onEachFeature: (feature, layer) => {
 
-          // LABEL PERMANENT UAT
-          layer.bindTooltip(
-            feature.properties.UAT,
-            {
-              permanent: true,
-              direction: 'center',
-              className: 'label-uat'
-            }
-          );
+          // LABEL UAT (inițial ascuns)
+          const tooltip = layer.bindTooltip(feature.properties.UAT, {
+            permanent: true,
+            direction: 'center',
+            className: 'label-uat'
+          });
 
-          // HOVER UAT
+          tooltip.remove(); // ASCUNS LA ZOOM MIC
+
+          // HOVER
           layer.on('mouseover', () => {
             layer.setStyle({
-              fillColor: '#f1c232',
-              fillOpacity: 0.95
+              fillOpacity: 1,
+              weight: 1.2
             });
           });
 
           layer.on('mouseout', () => {
             layer.setStyle({
-              fillColor: '#ffe599',
-              fillOpacity: 0.75
+              fillOpacity: 0.85,
+              weight: 0.7
             });
           });
 
@@ -124,11 +111,17 @@ function afiseazaUAT(judetSelectat) {
             window.location.href = feature.properties.URL;
           });
 
+          // ZOOMEND → afișăm label doar la zoom mare
+          map.on('zoomend', () => {
+            if (map.getZoom() >= 9) {
+              tooltip.addTo(map);
+            } else {
+              tooltip.remove();
+            }
+          });
         }
-
       }).addTo(map);
 
       backBtn.style.display = 'block';
-
     });
 }
