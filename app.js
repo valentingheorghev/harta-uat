@@ -171,29 +171,29 @@ function afiseazaUAT(judetSelectat) {
         onEachFeature: function(feature, layer) {
           var labelLatLng = getLabelLatLng(feature, layer);
 
-var label = L.marker(labelLatLng, {
-  icon: L.divIcon({
-    className: '',
-    html: '<span class="label-uat">' + formatUATName(feature.properties.UAT) + '</span>',
-    iconSize: [0, 0],
-    iconAnchor: [0, 0]
-  }),
-  interactive: false,
-  keyboard: false
-}).addTo(map);
+          var label = L.marker(labelLatLng, {
+            icon: L.divIcon({
+              className: 'uat-marker-container',
+              html: '<span class="label-uat">' + formatUATName(feature.properties.UAT) + '</span>',
+              iconSize: [0, 0],
+              iconAnchor: [0, 0]
+            }),
+            interactive: false,
+            keyboard: false
+          }).addTo(map);
 
           uatLabels.push(label);
 
-layer.on('mouseover', function() {
-  layer.setStyle({ fillColor: '#f1c232' });
-  var el = label.getElement();
-  if (el) el.querySelector('.label-uat').classList.add('label-hover');
-});
-layer.on('mouseout', function() {
-  layer.setStyle({ fillColor: '#ffe599' });
-  var el = label.getElement();
-  if (el) el.querySelector('.label-uat').classList.remove('label-hover');
-});
+          layer.on('mouseover', function() {
+            layer.setStyle({ fillColor: '#f1c232' });
+            var el = label.getElement();
+            if (el) el.querySelector('.label-uat').classList.add('label-hover');
+          });
+          layer.on('mouseout', function() {
+            layer.setStyle({ fillColor: '#ffe599' });
+            var el = label.getElement();
+            if (el) el.querySelector('.label-uat').classList.remove('label-hover');
+          });
           layer.on('click', function() {
             if (feature.properties.URL) {
               window.open(feature.properties.URL, '_blank');
@@ -205,5 +205,3 @@ layer.on('mouseout', function() {
       backBtn.style.display = 'block';
     });
 }
-
-
