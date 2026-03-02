@@ -66,20 +66,10 @@ function getLabelLatLng(feature, layer) {
   if (!rings) return layer.getBounds().getCenter();
 
   try {
-    var ring = rings[0];
-    var cx = 0, cy = 0, n = ring.length - 1;
-    for (var k = 0; k < n; k++) { cx += ring[k][0]; cy += ring[k][1]; }
-    var centroid = [cx / n, cy / n];
-
-    if (pointInRing(centroid, ring)) {
-      return L.latLng(centroid[1], centroid[0]);
-    }
-
     var pt = polylabel(rings, 0.0001);
     return L.latLng(pt[1], pt[0]);
-
   } catch (e) {
-    console.warn('label error:', feature.properties.UAT, e);
+    console.warn('polylabel error:', feature.properties.UAT, e);
     return layer.getBounds().getCenter();
   }
 }
@@ -217,3 +207,4 @@ function afiseazaUAT(judetSelectat) {
       backBtn.style.display = 'block';
     });
 }
+
