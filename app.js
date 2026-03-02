@@ -45,27 +45,61 @@ function getLabelLatLng(feature, layer) {
     } else if (feature.geometry.type === 'MultiPolygon') {
       rings = getLargestPolygonRings(feature.geometry.coordinates);
     }
+
     if (rings) {
       var pt = polylabel(rings, 0.0001);
-      return L.latLng(pt[1], pt[0]);
+
+      // dacă raza e prea mică = poligon îngust/alungit → nu folosi polylabel
+      if (pt.distance && pt.distance > 0.005) {
+        return L.latLng(pt[1], pt[0]);
+      }
     }
   } catch (e) {
     console.warn('polylabel error:', feature.properties.UAT);
   }
+
+  // fallback pentru poligoane înguste: centrul bbox-ului
+  // bbox center e mai stabil vizual pe forme alungite decât centroidul aritmetic
   try {
-    var geom = feature.geometry;
-    var ring2 = geom.type === 'Polygon'
-      ? geom.coordinates[0]
-      : getLargestPolygonRings(geom.coordinates)[0];
-    var cx = 0, cy = 0, n = ring2.length - 1;
-    for (var k = 0; k < n; k++) {
-      cx += ring2[k][0];
-      cy += ring2[k][1];
+    var bounds = layer.getBounds();
+    var latMid = (bounds.getNorth() + bounds.getSouth()) / 2;
+    var lngMid = (bounds.getEast() + bounds.getWest()) / 2;
+
+    // verifică dacă punctul bbox e în interiorul poligonului
+    // dacă nu, ia polylabel oricum (mai bun decât nimic)
+    var rings2 = null;
+    if (feature.geometry.type === 'Polygon') {
+      rings2 = feature.geometry.coordinates;
+    } else if (feature.geometry.type === 'MultiPolygon') {
+      rings2 = getLargestPolygonRings(feature.geometry.coordinates);
     }
-    return L.latLng(cy / n, cx / n);
-  } catch (e2) {
-    return layer.getBounds().getCenter();
+
+    if (rings2 && pointInRing([lngMid, latMid], rings2[0])) {
+      return L.latLng(latMid, lngMid);
+    }
+
+    // bbox nu e în poligon → forțează polylabel indiferent de distanță
+    if (rings2) {
+      var pt2 = polylabel(rings2, 0.0001);
+      return L.latLng(pt2[1], pt2[0]);
+    }
+  } catch (e2) {}
+
+  return layer.getBounds().getCenter();
+}
+
+// helper: punct în inel exterior
+function pointInRing(pt, ring) {
+  var x = pt[0], y = pt[1];
+  var inside = false;
+  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    var xi = ring[i][0], yi = ring[i][1];
+    var xj = ring[j][0], yj = ring[j][1];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
   }
+  return inside;
 }
 
 // ================== MAP ==================
@@ -202,3 +236,4 @@ function afiseazaUAT(judetSelectat) {
       backBtn.style.display = 'block';
     });
 }
+
