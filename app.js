@@ -10,18 +10,16 @@ function getLargestPolygonRings(multiPolygonCoords) {
   let bestRings = null;
 
   multiPolygonCoords.forEach(polygonRings => {
-    const ring = polygonRings[0]; // exterior ring
-    // Shoelace formula pentru arie aproximativă
+    const ring = polygonRings[0];
     let area = 0;
     for (let i = 0; i < ring.length - 1; i++) {
       area += ring[i][0] * ring[i + 1][1];
       area -= ring[i + 1][0] * ring[i][1];
     }
     area = Math.abs(area / 2);
-
     if (area > maxArea) {
       maxArea = area;
-      bestRings = polygonRings; // toate ring-urile poligonului câștigător
+      bestRings = polygonRings;
     }
   });
 
@@ -106,50 +104,39 @@ function afiseazaUAT(judetSelectat) {
           let labelLatLng;
 
           // ================== POLYLABEL cu fix MultiPolygon ==================
-          try {
-            let rings = null;
+try {
+  let rings = null;
 
-            if (feature.geometry.type === 'Polygon') {
-              rings = feature.geometry.coordinates;
+  if (feature.geometry.type === 'Polygon') {
+    rings = feature.geometry.coordinates;
+  } else if (feature.geometry.type === 'MultiPolygon') {
+    rings = getLargestPolygonRings(feature.geometry.coordinates); // ← cel mai mare poligon
+  }
 
-            } else if (feature.geometry.type === 'MultiPolygon') {
-              // ← FIX: găsește cel mai mare poligon, nu primul
-              rings = getLargestPolygonRings(feature.geometry.coordinates);
-            }
-
-            if (rings) {
-              const [x, y] = polylabel(rings, 1.0);
-              labelLatLng = L.latLng(y, x);
-            }
-          } catch (e) {
-            console.warn('polylabel failed:', feature.properties.UAT);
-          }
-
-          if (!labelLatLng) labelLatLng = layer.getBounds().getCenter();
-
-          const label = L.tooltip({
-            permanent: true, direction: 'center', className: 'label-uat'
-          })
-            .setContent(feature.properties.UAT)
-            .setLatLng(labelLatLng)
-            .addTo(map);
-
-          uatLabels.push(label);
-
-          layer.on('mouseover', () => {
-            layer.setStyle({ fillColor: '#f1c232' });
-            label.getElement()?.classList.add('label-hover');
-          });
-          layer.on('mouseout', () => {
-            layer.setStyle({ fillColor: '#ffe599' });
-            label.getElement()?.classList.remove('label-hover');
-          });
-          layer.on('click', () => {
-            if (feature.properties.URL) window.open(feature.properties.URL, '_blank');
-          });
-        }
-      }).addTo(map);
-
-      backBtn.style.display = 'block';
-    });
+  if (rings) {
+    // ← FIX CRITIC: precizie 0.00001 grade (~1m), nu 1.0 (~111km)
+    const [x, y] = polylabel(rings, 0.00001);
+    labelLatLng = L.latLng(y, x);
+  }
+} catch (e) {
+  console.warn('polylabel failed:', feature.properties.UAT);
 }
+
+// Fallback mai robust: centroidul real al inelului exterior, nu bbox center
+if (!labelLatLng) {
+  try {
+    const geom = feature.geometry;
+    const ring = geom.type === 'Polygon'
+      ? geom.coordinates[0]
+      : getLargestPolygonRings(geom.coordinates)[0];
+
+    let x = 0, y = 0;
+    const n = ring.length - 1;
+    for (let i = 0; i < n; i++) { x += ring[i][0]; y += ring[i][1]; }
+    labelLatLng = L.latLng(y / n, x / n);
+  } catch (e) {
+    labelLatLng = layer.getBounds().getCenter(); // ultimul resort
+  }
+}
+
+
