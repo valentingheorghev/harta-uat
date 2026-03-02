@@ -1,39 +1,60 @@
-// ================== UTILS ==================
 function norm(txt) {
-  return txt
-    .toString()
-    .trim()
-    .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // ← FIX: \u nu \\u
+  return txt.toString().trim().toUpperCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-// ================== LARGEST POLYGON pentru MultiPolygon ==================
-function getLargestPolygonRings(multiPolygonCoords) {
-  let maxArea = -1;
-  let bestRings = null;
-
-  multiPolygonCoords.forEach(polygonRings => {
-    const ring = polygonRings[0];
-    let area = 0;
-    for (let i = 0; i < ring.length - 1; i++) {
-      area += ring[i][0] * ring[i + 1][1];
-      area -= ring[i + 1][0] * ring[i][1];
+function getLargestPolygonRings(coords) {
+  var best = null;
+  var maxArea = -1;
+  for (var i = 0; i < coords.length; i++) {
+    var ring = coords[i][0];
+    var area = 0;
+    for (var j = 0; j < ring.length - 1; j++) {
+      area += ring[j][0] * ring[j + 1][1];
+      area -= ring[j + 1][0] * ring[j][1];
     }
     area = Math.abs(area / 2);
     if (area > maxArea) {
       maxArea = area;
-      bestRings = polygonRings;
+      best = coords[i];
     }
-  });
-
-  return bestRings;
+  }
+  return best;
 }
 
-// ================== MAP ==================
-const map = L.map('map', {
-  preferCanvas: true
-}).setView([45.9, 24.9], 7);
+function getLabelLatLng(feature, layer) {
+  try {
+    var rings = null;
+    if (feature.geometry.type === 'Polygon') {
+      rings = feature.geometry.coordinates;
+    } else if (feature.geometry.type === 'MultiPolygon') {
+      rings = getLargestPolygonRings(feature.geometry.coordinates);
+    }
+    if (rings) {
+      var pt = polylabel(rings, 0.0001);
+      return L.latLng(pt[1], pt[0]);
+    }
+  } catch (e) {
+    console.warn('polylabel error:', feature.properties.UAT);
+  }
+
+  try {
+    var geom = feature.geometry;
+    var ring2 = geom.type === 'Polygon'
+      ? geom.coordinates[0]
+      : getLargestPolygonRings(geom.coordinates)[0];
+    var cx = 0, cy = 0, n = ring2.length - 1;
+    for (var k = 0; k < n; k++) {
+      cx += ring2[k][0];
+      cy += ring2[k][1];
+    }
+    return L.latLng(cy / n, cx / n);
+  } catch (e2) {
+    return layer.getBounds().getCenter();
+  }
+}
+
+var map = L.map('map', { preferCanvas: true }).setView([45.9, 24.9], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap',
@@ -43,28 +64,25 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   keepBuffer: 2
 }).addTo(map);
 
-let layerJudete = null;
-let layerUAT = null;
-let uatLabels = [];
+var layerJudete = null;
+var layerUAT = null;
+var uatLabels = [];
+var backBtn = document.getElementById('backBtn');
 
-const backBtn = document.getElementById('backBtn');
-
-// ================== RESET ==================
-backBtn.onclick = () => {
+backBtn.onclick = function() {
   if (layerUAT) map.removeLayer(layerUAT);
-  uatLabels.forEach(l => map.removeLayer(l));
+  for (var i = 0; i < uatLabels.length; i++) {
+    map.removeLayer(uatLabels[i]);
+  }
   uatLabels = [];
-
   if (layerJudete) layerJudete.addTo(map);
-
   map.setView([45.9, 24.9], 7);
   backBtn.style.display = 'none';
 };
 
-// ================== JUDEȚE ==================
 fetch('judete.geojson')
-  .then(r => r.json())
-  .then(data => {
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
     layerJudete = L.geoJSON(data, {
       style: {
         color: '#ffffff',
@@ -72,16 +90,19 @@ fetch('judete.geojson')
         fillColor: '#6fa8dc',
         fillOpacity: 0.9
       },
-      onEachFeature: (feature, layer) => {
+      onEachFeature: function(feature, layer) {
         layer.bindTooltip(feature.properties.Judet, {
           permanent: true,
           direction: 'center',
           className: 'label-judet'
         });
-
-        layer.on('mouseover', () => layer.setStyle({ fillColor: '#3d85c6' }));
-        layer.on('mouseout',  () => layer.setStyle({ fillColor: '#6fa8dc' }));
-        layer.on('click', () => {
+        layer.on('mouseover', function() {
+          layer.setStyle({ fillColor: '#3d85c6' });
+        });
+        layer.on('mouseout', function() {
+          layer.setStyle({ fillColor: '#6fa8dc' });
+        });
+        layer.on('click', function() {
           map.fitBounds(layer.getBounds(), { padding: [20, 20] });
           afiseazaUAT(feature.properties.Judet);
         });
@@ -89,68 +110,31 @@ fetch('judete.geojson')
     }).addTo(map);
   });
 
-// ================== UAT ==================
 function afiseazaUAT(judetSelectat) {
   if (layerJudete) map.removeLayer(layerJudete);
-  if (layerUAT)    map.removeLayer(layerUAT);
-  uatLabels.forEach(l => map.removeLayer(l));
+  if (layerUAT) map.removeLayer(layerUAT);
+  for (var i = 0; i < uatLabels.length; i++) {
+    map.removeLayer(uatLabels[i]);
+  }
   uatLabels = [];
 
   fetch('uat.geojson')
-    .then(r => r.json())
-    .then(data => {
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
       layerUAT = L.geoJSON(data, {
-        filter: f => norm(f.properties.Judet) === norm(judetSelectat),
-
+        filter: function(f) {
+          return norm(f.properties.Judet) === norm(judetSelectat);
+        },
         style: {
           color: '#000',
           weight: 0.8,
           fillColor: '#ffe599',
           fillOpacity: 0.9
         },
+        onEachFeature: function(feature, layer) {
+          var labelLatLng = getLabelLatLng(feature, layer);
 
-        onEachFeature: (feature, layer) => {
-          let labelLatLng;
-
-          // ================== POLYLABEL ==================
-          try {
-            let rings = null;
-
-            if (feature.geometry.type === 'Polygon') {
-              rings = feature.geometry.coordinates;
-            } else if (feature.geometry.type === 'MultiPolygon') {
-              rings = getLargestPolygonRings(feature.geometry.coordinates);
-            }
-
-            if (rings) {
-              const [x, y] = polylabel(rings, 0.00001); // ← precizie corectă pentru grade WGS84
-              labelLatLng = L.latLng(y, x);
-            }
-          } catch (e) {
-            console.warn('polylabel failed:', feature.properties.UAT);
-          }
-
-          // ================== FALLBACK: centroid real al inelului exterior ==================
-          if (!labelLatLng) {
-            try {
-              const geom = feature.geometry;
-              const ring = geom.type === 'Polygon'
-                ? geom.coordinates[0]
-                : getLargestPolygonRings(geom.coordinates)[0];
-
-              let cx = 0, cy = 0;
-              const n = ring.length - 1;
-              for (let i = 0; i < n; i++) {
-                cx += ring[i][0];
-                cy += ring[i][1];
-              }
-              labelLatLng = L.latLng(cy / n, cx / n);
-            } catch (e) {
-              labelLatLng = layer.getBounds().getCenter();
-            }
-          }
-
-          const label = L.tooltip({
+          var label = L.tooltip({
             permanent: true,
             direction: 'center',
             className: 'label-uat'
@@ -161,4 +145,26 @@ function afiseazaUAT(judetSelectat) {
 
           uatLabels.push(label);
 
-          layer.on('mouseover', ()
+          layer.on('mouseover', function() {
+            layer.setStyle({ fillColor: '#f1c232' });
+            if (label.getElement()) {
+              label.getElement().classList.add('label-hover');
+            }
+          });
+          layer.on('mouseout', function() {
+            layer.setStyle({ fillColor: '#ffe599' });
+            if (label.getElement()) {
+              label.getElement().classList.remove('label-hover');
+            }
+          });
+          layer.on('click', function() {
+            if (feature.properties.URL) {
+              window.open(feature.properties.URL, '_blank');
+            }
+          });
+        }
+      }).addTo(map);
+
+      backBtn.style.display = 'block';
+    });
+}
