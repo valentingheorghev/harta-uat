@@ -33,24 +33,32 @@
   background: none;
   border: none;
   box-shadow: none;
-  color: #000;
+  color: #1a1a1a;
   font-size: 10px;
   font-weight: 500;
+  font-family: Arial, sans-serif;
   pointer-events: none;
   white-space: nowrap;
-  transform: translate(-50%, -50%);  /* ← fix centrat exact */
+  transform: translate(-50%, -50%);
   text-align: center;
-  text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff; /* lizibilitate */
+  line-height: 1.2;
+  text-shadow:
+    1px  1px 2px rgba(255,255,255,0.95),
+   -1px -1px 2px rgba(255,255,255,0.95),
+    1px -1px 2px rgba(255,255,255,0.95),
+   -1px  1px 2px rgba(255,255,255,0.95);
 }
 
 .label-uat.label-hover {
   font-size: 11px;
   font-weight: 700;
+  color: #000;
 }
 
+/* ascunde labelurile la zoom mic */
+.labels-hidden .label-uat {
+  display: none;
 }
-
-    }
 
     #backBtn {
       position: absolute;
@@ -80,4 +88,5 @@
 
 </body>
 </html>
+
 
