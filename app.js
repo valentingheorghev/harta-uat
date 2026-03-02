@@ -75,9 +75,6 @@ function afiseazaUAT(judetSelectat) {
   if (layerJudete) map.removeLayer(layerJudete);
   if (layerUAT) map.removeLayer(layerUAT);
 
-  uatLabels.forEach(l => map.removeLayer(l));
-  uatLabels = [];
-
   fetch('uat.geojson')
     .then(r => r.json())
     .then(data => {
@@ -94,28 +91,44 @@ function afiseazaUAT(judetSelectat) {
 
         onEachFeature: (feature, layer) => {
 
-          // === CALCUL CENTRU STABIL (getBounds) ===
-          const center = layer.getBounds().getCenter();
+          // ============================
+          // POLYLABEL – punct interior
+          // ============================
+          let coords = feature.geometry.coordinates;
+
+          // normalizare GeoJSON → polylabel
+          if (feature.geometry.type === 'MultiPolygon') {
+            coords = coords[0];
+          }
+
+          const [x, y] = polylabel(coords, 1.0);
+          const labelLatLng = L.latLng(y, x);
 
           const label = L.tooltip({
             permanent: true,
-            direction: 'top',
-            offset: [0, -6],
+            direction: 'center',
             className: 'label-uat'
           })
           .setContent(feature.properties.UAT)
-          .setLatLng(center);
+          .setLatLng(labelLatLng)
+          .addTo(map);
 
-          uatLabels.push(label);
-
-          // === HOVER POLIGON ===
+          // ============================
+          // HOVER
+          // ============================
           layer.on('mouseover', () => {
-            layer.setStyle({ fillColor: '#f1c232', weight: 1.2 });
+            layer.setStyle({
+              fillColor: '#f1c232',
+              weight: 1.2
+            });
             label.getElement()?.classList.add('label-hover');
           });
 
           layer.on('mouseout', () => {
-            layer.setStyle({ fillColor: '#ffe599', weight: 0.8 });
+            layer.setStyle({
+              fillColor: '#ffe599',
+              weight: 0.8
+            });
             label.getElement()?.classList.remove('label-hover');
           });
 
@@ -127,9 +140,6 @@ function afiseazaUAT(judetSelectat) {
           });
         }
       }).addTo(map);
-
-      updateUATLabels();
-      map.on('zoomend moveend', updateUATLabels);
 
       backBtn.style.display = 'block';
     });
@@ -150,3 +160,4 @@ function updateUATLabels() {
     }
   });
 }
+
