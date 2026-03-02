@@ -1,6 +1,21 @@
+// ================== UTILS ==================
 function norm(txt) {
   return txt.toString().trim().toUpperCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function formatUATName(name) {
+  if (!name) return '';
+  if (name.length <= 10) return name;
+  var mid = Math.floor(name.length / 2);
+  var left = name.lastIndexOf(' ', mid);
+  var right = name.indexOf(' ', mid);
+  var splitAt = -1;
+  if (left === -1 && right === -1) return name;
+  if (left === -1) splitAt = right;
+  else if (right === -1) splitAt = left;
+  else splitAt = (mid - left <= right - mid) ? left : right;
+  return name.substring(0, splitAt) + '<br>' + name.substring(splitAt + 1);
 }
 
 function getLargestPolygonRings(coords) {
@@ -37,7 +52,6 @@ function getLabelLatLng(feature, layer) {
   } catch (e) {
     console.warn('polylabel error:', feature.properties.UAT);
   }
-
   try {
     var geom = feature.geometry;
     var ring2 = geom.type === 'Polygon'
@@ -54,6 +68,7 @@ function getLabelLatLng(feature, layer) {
   }
 }
 
+// ================== MAP ==================
 var map = L.map('map').setView([45.9, 24.9], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -64,11 +79,23 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   keepBuffer: 2
 }).addTo(map);
 
+// ascunde labeluri UAT sub zoom 10
+var MIN_UAT_LABEL_ZOOM = 10;
+map.on('zoomend', function() {
+  var container = map.getContainer();
+  if (map.getZoom() >= MIN_UAT_LABEL_ZOOM) {
+    container.classList.remove('labels-hidden');
+  } else {
+    container.classList.add('labels-hidden');
+  }
+});
+
 var layerJudete = null;
 var layerUAT = null;
 var uatLabels = [];
 var backBtn = document.getElementById('backBtn');
 
+// ================== RESET ==================
 backBtn.onclick = function() {
   if (layerUAT) map.removeLayer(layerUAT);
   for (var i = 0; i < uatLabels.length; i++) {
@@ -80,6 +107,7 @@ backBtn.onclick = function() {
   backBtn.style.display = 'none';
 };
 
+// ================== JUDEȚE ==================
 fetch('judete.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -96,7 +124,6 @@ fetch('judete.geojson')
           direction: 'center',
           className: 'label-judet'
         });
-
         layer.on('mouseover', function() {
           layer.setStyle({ fillColor: '#3d85c6' });
         });
@@ -111,6 +138,7 @@ fetch('judete.geojson')
     }).addTo(map);
   });
 
+// ================== UAT ==================
 function afiseazaUAT(judetSelectat) {
   if (layerJudete) map.removeLayer(layerJudete);
   if (layerUAT) map.removeLayer(layerUAT);
@@ -141,7 +169,7 @@ function afiseazaUAT(judetSelectat) {
           var label = L.marker(labelLatLng, {
             icon: L.divIcon({
               className: 'label-uat',
-              html: feature.properties.UAT,
+              html: formatUATName(feature.properties.UAT),
               iconSize: [0, 0],
               iconAnchor: [0, 0]
             }),
