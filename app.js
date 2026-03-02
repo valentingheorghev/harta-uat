@@ -97,11 +97,18 @@ fetch('judete.geojson')
           className: 'label-judet'
         });
         layer.on('mouseover', function() {
-          layer.setStyle({ fillColor: '#3d85c6' });
-        });
-        layer.on('mouseout', function() {
-          layer.setStyle({ fillColor: '#6fa8dc' });
-        });
+  layer.setStyle({ fillColor: '#f1c232' });
+  if (label.getElement()) {
+    label.getElement().classList.add('label-hover');
+  }
+});
+layer.on('mouseout', function() {
+  layer.setStyle({ fillColor: '#ffe599' });
+  if (label.getElement()) {
+    label.getElement().classList.remove('label-hover');
+  }
+});
+
         layer.on('click', function() {
           map.fitBounds(layer.getBounds(), { padding: [20, 20] });
           afiseazaUAT(feature.properties.Judet);
@@ -134,29 +141,32 @@ function afiseazaUAT(judetSelectat) {
         onEachFeature: function(feature, layer) {
           var labelLatLng = getLabelLatLng(feature, layer);
 
-          var label = L.tooltip({
-            permanent: true,
-            direction: 'center',
-            className: 'label-uat'
-          })
-            .setContent(feature.properties.UAT)
-            .setLatLng(labelLatLng)
-            .addTo(map);
+          var label = L.marker(labelLatLng, {
+  icon: L.divIcon({
+    className: 'label-uat',
+    html: feature.properties.UAT,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0]
+  }),
+  interactive: false,
+  keyboard: false
+}).addTo(map);
 
           uatLabels.push(label);
 
-          layer.on('mouseover', function() {
-            layer.setStyle({ fillColor: '#f1c232' });
-            if (label.getElement()) {
-              label.getElement().classList.add('label-hover');
-            }
-          });
-          layer.on('mouseout', function() {
-            layer.setStyle({ fillColor: '#ffe599' });
-            if (label.getElement()) {
-              label.getElement().classList.remove('label-hover');
-            }
-          });
+       layer.on('mouseover', function() {
+  layer.setStyle({ fillColor: '#f1c232' });
+  if (label.getElement()) {
+    label.getElement().classList.add('label-hover');
+  }
+});
+layer.on('mouseout', function() {
+  layer.setStyle({ fillColor: '#ffe599' });
+  if (label.getElement()) {
+    label.getElement().classList.remove('label-hover');
+  }
+});
+
           layer.on('click', function() {
             if (feature.properties.URL) {
               window.open(feature.properties.URL, '_blank');
@@ -168,3 +178,4 @@ function afiseazaUAT(judetSelectat) {
       backBtn.style.display = 'block';
     });
 }
+
