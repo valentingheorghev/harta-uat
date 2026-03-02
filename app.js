@@ -11,6 +11,11 @@ function norm(txt) {
 // ================== MAP ==================
 const map = L.map('map').setView([45.9, 24.9], 7);
 
+// TILE LAYER – OBLIGATORIU (dacă lipsește, ai hartă „moartă”)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
 let layerJudete = null;
 let layerUAT = null;
 let uatLabels = [];
@@ -19,11 +24,7 @@ const backBtn = document.getElementById('backBtn');
 
 // ================== RESET ==================
 backBtn.onclick = () => {
-  if (layerUAT) {
-    map.removeLayer(layerUAT);
-    layerUAT = null;
-  }
-
+  if (layerUAT) map.removeLayer(layerUAT);
   uatLabels.forEach(l => map.removeLayer(l));
   uatLabels = [];
 
@@ -48,7 +49,6 @@ fetch('judete.geojson')
 
       onEachFeature: (feature, layer) => {
 
-        // LABEL JUDEȚ
         layer.bindTooltip(feature.properties.Judet, {
           permanent: true,
           direction: 'center',
@@ -75,11 +75,7 @@ fetch('judete.geojson')
 function afiseazaUAT(judetSelectat) {
 
   if (layerJudete) map.removeLayer(layerJudete);
-
-  if (layerUAT) {
-    map.removeLayer(layerUAT);
-    layerUAT = null;
-  }
+  if (layerUAT) map.removeLayer(layerUAT);
 
   uatLabels.forEach(l => map.removeLayer(l));
   uatLabels = [];
@@ -100,21 +96,30 @@ function afiseazaUAT(judetSelectat) {
 
         onEachFeature: (feature, layer) => {
 
-          // ================== POLYLABEL ==================
-          let rings = null;
+          let labelLatLng;
 
-          if (feature.geometry.type === 'Polygon') {
-            rings = feature.geometry.coordinates;
+          // ================== POLYLABEL (SAFE) ==================
+          try {
+            let rings = null;
+
+            if (feature.geometry.type === 'Polygon') {
+              rings = feature.geometry.coordinates;
+            } else if (feature.geometry.type === 'MultiPolygon') {
+              rings = feature.geometry.coordinates[0];
+            }
+
+            if (rings) {
+              const [x, y] = polylabel(rings, 1.0);
+              labelLatLng = L.latLng(y, x);
+            }
+          } catch (e) {
+            console.warn('polylabel failed:', feature.properties.UAT);
           }
 
-          if (feature.geometry.type === 'MultiPolygon') {
-            rings = feature.geometry.coordinates[0];
+          // ================== FALLBACK SIGUR ==================
+          if (!labelLatLng) {
+            labelLatLng = layer.getBounds().getCenter();
           }
-
-          if (!rings) return;
-
-          const [x, y] = polylabel(rings, 1.0);
-          const latlng = L.latLng(y, x);
 
           const label = L.tooltip({
             permanent: true,
@@ -122,7 +127,7 @@ function afiseazaUAT(judetSelectat) {
             className: 'label-uat'
           })
             .setContent(feature.properties.UAT)
-            .setLatLng(latlng)
+            .setLatLng(labelLatLng)
             .addTo(map);
 
           uatLabels.push(label);
@@ -147,6 +152,7 @@ function afiseazaUAT(judetSelectat) {
         }
       }).addTo(map);
 
+      // 🔴 ASTA ACUM SE EXECUTĂ SIGUR
       backBtn.style.display = 'block';
     });
 }
