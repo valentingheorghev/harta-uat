@@ -37,7 +37,6 @@ function getLargestPolygonRings(coords) {
   return best;
 }
 
-// centroid area-weighted (Green's theorem) - mai precis decât media vârfurilor
 function ringCentroid(ring) {
   var x = 0, y = 0, area = 0;
   var n = ring.length - 1;
@@ -51,7 +50,6 @@ function ringCentroid(ring) {
   }
   area /= 2;
   if (Math.abs(area) < 1e-12) {
-    // poligon degenerat - media vârfurilor
     var cx = 0, cy = 0;
     for (var k = 0; k < n; k++) { cx += ring[k][0]; cy += ring[k][1]; }
     return [cx / n, cy / n];
@@ -72,6 +70,11 @@ function pointInRing(pt, ring) {
 }
 
 function getLabelLatLng(feature, layer) {
+  // coordonate manuale în GeoJSON → prioritate maximă
+  if (feature.properties.LabelLat && feature.properties.LabelLng) {
+    return L.latLng(feature.properties.LabelLat, feature.properties.LabelLng);
+  }
+
   var rings = null;
   if (feature.geometry.type === 'Polygon') {
     rings = feature.geometry.coordinates;
@@ -83,10 +86,8 @@ function getLabelLatLng(feature, layer) {
   var ring = rings[0];
   var c = ringCentroid(ring);
 
-  // centroidul e în interior → perfect
   if (pointInRing(c, ring)) return L.latLng(c[1], c[0]);
 
-  // poligon concav: centroidul a ieșit afară → media vârfurilor (de obicei e înăuntru)
   var cx = 0, cy = 0, n = ring.length - 1;
   for (var k = 0; k < n; k++) { cx += ring[k][0]; cy += ring[k][1]; }
   return L.latLng(cy / n, cx / n);
@@ -124,6 +125,7 @@ backBtn.onclick = function() {
   if (layerJudete) layerJudete.addTo(map);
   map.setView([45.9, 24.9], 7);
   backBtn.style.display = 'none';
+  map.getContainer().classList.add('labels-hidden');
 };
 
 // ================== JUDEȚE ==================
@@ -197,5 +199,6 @@ function afiseazaUAT(judetSelectat) {
       }).addTo(map);
 
       backBtn.style.display = 'block';
+      map.getContainer().classList.remove('labels-hidden');
     });
 }
