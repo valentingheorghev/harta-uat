@@ -1,3 +1,4 @@
+// ================== UTILS ==================
 function norm(txt) {
   var s = txt.toString().trim().toUpperCase().normalize("NFD");
   var result = '';
@@ -6,6 +7,20 @@ function norm(txt) {
     if (code < 768 || code > 879) result += s[i];
   }
   return result;
+}
+
+function formatUATName(name) {
+  if (!name) return '';
+  if (name.length <= 10) return name;
+  var mid = Math.floor(name.length / 2);
+  var left = name.lastIndexOf(' ', mid);
+  var right = name.indexOf(' ', mid);
+  var splitAt = -1;
+  if (left === -1 && right === -1) return name;
+  if (left === -1) splitAt = right;
+  else if (right === -1) splitAt = left;
+  else splitAt = (mid - left <= right - mid) ? left : right;
+  return name.substring(0, splitAt) + '<br>' + name.substring(splitAt + 1);
 }
 
 function getLargestPolygonRings(coords) {
@@ -22,6 +37,40 @@ function getLargestPolygonRings(coords) {
   return best;
 }
 
+// centroid area-weighted (Green's theorem) - mai precis decât media vârfurilor
+function ringCentroid(ring) {
+  var x = 0, y = 0, area = 0;
+  var n = ring.length - 1;
+  for (var i = 0, j = n - 1; i < n; j = i++) {
+    var xi = ring[i][0], yi = ring[i][1];
+    var xj = ring[j][0], yj = ring[j][1];
+    var f = xi * yj - xj * yi;
+    area += f;
+    x += (xi + xj) * f;
+    y += (yi + yj) * f;
+  }
+  area /= 2;
+  if (Math.abs(area) < 1e-12) {
+    // poligon degenerat - media vârfurilor
+    var cx = 0, cy = 0;
+    for (var k = 0; k < n; k++) { cx += ring[k][0]; cy += ring[k][1]; }
+    return [cx / n, cy / n];
+  }
+  return [x / (6 * area), y / (6 * area)];
+}
+
+function pointInRing(pt, ring) {
+  var x = pt[0], y = pt[1], inside = false;
+  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    var xi = ring[i][0], yi = ring[i][1];
+    var xj = ring[j][0], yj = ring[j][1];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
 function getLabelLatLng(feature, layer) {
   var rings = null;
   if (feature.geometry.type === 'Polygon') {
@@ -30,14 +79,20 @@ function getLabelLatLng(feature, layer) {
     rings = getLargestPolygonRings(feature.geometry.coordinates);
   }
   if (!rings) return layer.getBounds().getCenter();
-  try {
-    var pt = polylabel(rings, 0.0001);
-    return L.latLng(pt[1], pt[0]);
-  } catch (e) {
-    return layer.getBounds().getCenter();
-  }
+
+  var ring = rings[0];
+  var c = ringCentroid(ring);
+
+  // centroidul e în interior → perfect
+  if (pointInRing(c, ring)) return L.latLng(c[1], c[0]);
+
+  // poligon concav: centroidul a ieșit afară → media vârfurilor (de obicei e înăuntru)
+  var cx = 0, cy = 0, n = ring.length - 1;
+  for (var k = 0; k < n; k++) { cx += ring[k][0]; cy += ring[k][1]; }
+  return L.latLng(cy / n, cx / n);
 }
 
+// ================== MAP ==================
 var map = L.map('map').setView([45.9, 24.9], 7);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -61,6 +116,7 @@ map.on('zoomend', function() {
 var layerJudete = null, layerUAT = null, uatLabels = [];
 var backBtn = document.getElementById('backBtn');
 
+// ================== RESET ==================
 backBtn.onclick = function() {
   if (layerUAT) map.removeLayer(layerUAT);
   for (var i = 0; i < uatLabels.length; i++) map.removeLayer(uatLabels[i]);
@@ -70,6 +126,7 @@ backBtn.onclick = function() {
   backBtn.style.display = 'none';
 };
 
+// ================== JUDEȚE ==================
 fetch('judete.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -89,6 +146,7 @@ fetch('judete.geojson')
     }).addTo(map);
   });
 
+// ================== UAT ==================
 function afiseazaUAT(judetSelectat) {
   if (layerJudete) map.removeLayer(layerJudete);
   if (layerUAT) map.removeLayer(layerUAT);
@@ -107,26 +165,30 @@ function afiseazaUAT(judetSelectat) {
         },
         style: { color: '#000', weight: 0.8, fillColor: '#ffe599', fillOpacity: 0.9 },
         onEachFeature: function(feature, layer) {
-          var latlng = getLabelLatLng(feature, layer);
+          var labelLatLng = getLabelLatLng(feature, layer);
 
-          var label = L.tooltip({
-            permanent: true,
-            direction: 'center',
-            className: 'label-uat'
-          })
-            .setContent(feature.properties.UAT)
-            .setLatLng(latlng)
-            .addTo(map);
+          var label = L.marker(labelLatLng, {
+            icon: L.divIcon({
+              className: 'uat-label-wrap',
+              html: '<div class="label-uat">' + formatUATName(feature.properties.UAT) + '</div>',
+              iconSize: [0, 0],
+              iconAnchor: [0, 0]
+            }),
+            interactive: false,
+            keyboard: false
+          }).addTo(map);
 
           uatLabels.push(label);
 
           layer.on('mouseover', function() {
             layer.setStyle({ fillColor: '#f1c232' });
-            if (label.getElement()) label.getElement().classList.add('label-hover');
+            var el = label.getElement();
+            if (el) el.querySelector('.label-uat').classList.add('label-hover');
           });
           layer.on('mouseout', function() {
             layer.setStyle({ fillColor: '#ffe599' });
-            if (label.getElement()) label.getElement().classList.remove('label-hover');
+            var el = label.getElement();
+            if (el) el.querySelector('.label-uat').classList.remove('label-hover');
           });
           layer.on('click', function() {
             if (feature.properties.URL) window.open(feature.properties.URL, '_blank');
