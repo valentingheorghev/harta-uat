@@ -111,12 +111,25 @@ function getLabelLatLng(feature, layer) {
 // ================== MAP ==================
 var map = L.map('map').setView([45.9, 24.9], 7);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap',
   maxZoom: 19,
   updateWhenIdle: true,
   updateWhenZooming: false,
   keepBuffer: 2
+}).addTo(map);
+
+// strat gol pentru opțiunea "Fără hartă de fundal"
+var blankLayer = L.tileLayer('', { attribution: '' });
+
+var baseLayers = {
+  'OpenStreetMap': osmLayer,
+  'Fără fundal': blankLayer
+};
+
+L.control.layers(baseLayers, null, {
+  position: 'topright',
+  collapsed: false
 }).addTo(map);
 
 var MIN_UAT_LABEL_ZOOM = 10;
@@ -262,3 +275,4 @@ function afiseazaUAT(judetSelectat) {
       map.getContainer().classList.remove('labels-hidden');
     });
 }
+
