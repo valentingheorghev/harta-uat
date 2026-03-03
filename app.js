@@ -131,21 +131,42 @@ backBtn.onclick = function() {
 fetch('judete.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    layerJudete = L.geoJSON(data, {
-      style: { color: '#ffffff', weight: 1.3, fillColor: '#6fa8dc', fillOpacity: 0.9 },
-      onEachFeature: function(feature, layer) {
-        layer.bindTooltip(feature.properties.Judet, {
-          permanent: true, direction: 'center', className: 'label-judet'
-        });
-        layer.on('mouseover', function() { layer.setStyle({ fillColor: '#3d85c6' }); });
-        layer.on('mouseout',  function() { layer.setStyle({ fillColor: '#6fa8dc' }); });
-        layer.on('click', function() {
-          map.fitBounds(layer.getBounds(), { padding: [20, 20] });
-          afiseazaUAT(feature.properties.Judet);
-        });
-      }
-    }).addTo(map);
-  });
+layerJudete = L.geoJSON(data, {
+  style: {
+    color: '#ffffff',
+    weight: 2.5,          // ← mai gros implicit
+    fillColor: '#6fa8dc',
+    fillOpacity: 0.9
+  },
+  onEachFeature: function(feature, layer) {
+
+    layer.bindTooltip(feature.properties.Judet, {
+      permanent: true,
+      direction: 'center',
+      className: 'label-judet'
+    });
+
+    layer.on('mouseover', function() {
+      layer.setStyle({
+        fillColor: '#3d85c6',
+        weight: 4          // ← mai gros la hover
+      });
+      layer.bringToFront(); // ← important (arată profesional)
+    });
+
+    layer.on('mouseout', function() {
+      layer.setStyle({
+        fillColor: '#6fa8dc',
+        weight: 2.5
+      });
+    });
+
+    layer.on('click', function() {
+      map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+      afiseazaUAT(feature.properties.Judet);
+    });
+  }
+}).addTo(map);
 
 // ================== UAT ==================
 function afiseazaUAT(judetSelectat) {
@@ -165,7 +186,7 @@ function afiseazaUAT(judetSelectat) {
         filter: function(f) {
           return norm(f.properties.Judet) === norm(judetSelectat);
         },
-        style: { color: '#000', weight: 0.8, fillColor: '#ffe599', fillOpacity: 0.9 },
+        style: { color: '#000', weight: 1.5, fillColor: '#ffe599', fillOpacity: 0.9 },
         onEachFeature: function(feature, layer) {
           var labelLatLng = getLabelLatLng(feature, layer);
 
@@ -183,15 +204,25 @@ function afiseazaUAT(judetSelectat) {
           uatLabels.push(label);
 
           layer.on('mouseover', function() {
-            layer.setStyle({ fillColor: '#f1c232' });
-            var el = label.getElement();
-            if (el) el.querySelector('.label-uat').classList.add('label-hover');
-          });
-          layer.on('mouseout', function() {
-            layer.setStyle({ fillColor: '#ffe599' });
-            var el = label.getElement();
-            if (el) el.querySelector('.label-uat').classList.remove('label-hover');
-          });
+  layer.setStyle({
+    fillColor: '#f1c232',
+    weight: 3             // ← mai gros la hover
+  });
+  layer.bringToFront();
+
+  var el = label.getElement();
+  if (el) el.querySelector('.label-uat').classList.add('label-hover');
+});
+
+layer.on('mouseout', function() {
+  layer.setStyle({
+    fillColor: '#ffe599',
+    weight: 1.5
+  });
+
+  var el = label.getElement();
+  if (el) el.querySelector('.label-uat').classList.remove('label-hover');
+});
           layer.on('click', function() {
             if (feature.properties.URL) window.open(feature.properties.URL, '_blank');
           });
@@ -202,3 +233,4 @@ function afiseazaUAT(judetSelectat) {
       map.getContainer().classList.remove('labels-hidden'); // ← mereu vizibile când UAT activ
     });
 }
+
