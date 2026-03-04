@@ -106,7 +106,7 @@ function getLabelLatLng(feature, layer) {
 }
 
 // ================== MAP ==================
-var map = L.map('map').setView([45.9, 24.9], 7);
+var map = L.map('apysis-map').setView([45.9, 24.9], 7);
 
 var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap',
@@ -253,6 +253,7 @@ function afiseazaUAT(judetSelectat) {
       console.error('Eroare la încărcarea UAT pentru: ' + judetSelectat, e);
     });
 }
+
 
 
 
