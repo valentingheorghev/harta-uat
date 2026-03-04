@@ -1,4 +1,7 @@
 // ================== UTILS ==================
+if (document.getElementById('apysis-map')) {
+
+  var map = L.map('apysis-map').setView([45.9, 24.9], 7);
 function norm(txt) {
   var s = txt.toString().trim().toUpperCase().normalize("NFD");
   var result = '';
@@ -253,6 +256,7 @@ function afiseazaUAT(judetSelectat) {
       console.error('Eroare la încărcarea UAT pentru: ' + judetSelectat, e);
     });
 }
+
 
 
 
