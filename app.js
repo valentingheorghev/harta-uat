@@ -225,7 +225,7 @@ legend.onAdd = function() {
 
     '<div style="margin-bottom:6px;">' +
     '<span style="display:inline-block;width:14px;height:14px;background:hsl(210,70%,55%);border:2px solid #fff;margin-right:6px;"></span>' +
-    'Județ (nuanțe de albastru)' +
+    'Județe' +
     '</div>' +
 
     '<div>' +
@@ -379,6 +379,7 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
 
