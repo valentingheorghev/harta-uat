@@ -215,10 +215,31 @@ map.on('zoomend', function() {
     c.classList.add('labels-hidden');
   }
 });
+var legend = L.control({ position: 'bottomright' });
 
+legend.onAdd = function() {
+  var div = L.DomUtil.create('div', 'info legend');
+  div.innerHTML =
+    '<b>Legendă</b><br>' +
+    '<span style="background:#ffe599;width:12px;height:12px;display:inline-block;margin-right:6px;"></span> UAT<br>' +
+    '<span style="border:2px solid #fff;width:12px;height:12px;display:inline-block;margin-right:6px;"></span> Județ';
+  return div;
+};
+
+legend.addTo(map);
 var layerJudete = null, layerUAT = null, uatLabels = [];
   var selectedJudetLayer = null;
 var backBtn = document.getElementById('backBtn');
+  var resetViewBtn = document.getElementById('resetViewBtn');
+
+resetViewBtn.onclick = function() {
+  map.setView([45.9, 24.9], 7);
+
+  if (selectedJudetLayer) {
+    layerJudete.resetStyle(selectedJudetLayer);
+    selectedJudetLayer = null;
+  }
+};
 
 // ================== RESET ==================
 backBtn.onclick = function() {
@@ -348,6 +369,7 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
 
