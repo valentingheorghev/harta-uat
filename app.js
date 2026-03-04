@@ -219,10 +219,20 @@ var legend = L.control({ position: 'bottomright' });
 
 legend.onAdd = function() {
   var div = L.DomUtil.create('div', 'info legend');
+
   div.innerHTML =
-    '<b>Legendă</b><br>' +
-    '<span style="background:#ffe599;width:12px;height:12px;display:inline-block;margin-right:6px;"></span> UAT<br>' +
-    '<span style="border:2px solid #fff;width:12px;height:12px;display:inline-block;margin-right:6px;"></span> Județ';
+    '<b>Legendă</b><br><br>' +
+
+    '<div style="margin-bottom:6px;">' +
+    '<span style="display:inline-block;width:14px;height:14px;background:hsl(210,70%,55%);border:2px solid #fff;margin-right:6px;"></span>' +
+    'Județ (nuanțe de albastru)' +
+    '</div>' +
+
+    '<div>' +
+    '<span style="display:inline-block;width:14px;height:14px;background:#ffe599;border:1px solid #000;margin-right:6px;"></span>' +
+    'UAT' +
+    '</div>';
+
   return div;
 };
 
@@ -369,6 +379,7 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
 
