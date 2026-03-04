@@ -146,23 +146,62 @@ function getLabelLatLng(feature, layer) {
 }
 
 // ================== MAP ==================
-var map = L.map('apysis-map').setView([45.9, 24.9], 7);
+var romaniaBounds = L.latLngBounds(
+  [43.5, 20.0],   // SV
+  [48.5, 30.5]    // NE
+);
 
-var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap',
-  maxZoom: 19,
-  updateWhenIdle: true,
-  updateWhenZooming: false,
-  keepBuffer: 2
-}).addTo(map);
+var map = L.map('apysis-map', {
+  minZoom: 6,
+  maxZoom: 18,
+  maxBounds: romaniaBounds,
+  maxBoundsViscosity: 1.0
+}).setView([45.9, 24.9], 7);
+
+
+// ================== BASE LAYERS ==================
+var osmLayer = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19,
+    updateWhenIdle: true,
+    updateWhenZooming: false,
+    keepBuffer: 2
+  }
+).addTo(map);
+
+
+var satelliteLayer = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  }
+);
 
 var blankLayer = L.tileLayer('', { attribution: '' });
 
+
+// ================== LAYER CONTROL ==================
 var layerControl = L.control.layers(
-  { 'OpenStreetMap': osmLayer, 'Fără fundal': blankLayer },
+  {
+    'OpenStreetMap': osmLayer,
+    'Satelit': satelliteLayer,
+    'Fără fundal': blankLayer
+  },
   {},
-  { position: 'topright', collapsed: false }
+  {
+    position: 'topright',
+    collapsed: true
+  }
 ).addTo(map);
+
+
+// ================== SCALE ==================
+L.control.scale({
+  imperial: false
+}).addTo(map);
 
 var MIN_UAT_LABEL_ZOOM = 10;
 var uatActive = false;
@@ -292,3 +331,4 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
