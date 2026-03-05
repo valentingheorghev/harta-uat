@@ -272,6 +272,10 @@ resetViewBtn.onclick = function() {
 backBtn.onclick = function() {
   uatActive = false;
   resetUATLayers();
+  if (selectedJudetLayer) {
+    layerJudete.resetStyle(selectedJudetLayer);
+    selectedJudetLayer = null;
+  }
   if (layerJudete && !map.hasLayer(layerJudete)) layerJudete.addTo(map);
   map.setView([45.9, 24.9], 7, { animate: false });
   backBtn.style.display = 'none';
