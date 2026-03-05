@@ -235,17 +235,20 @@ function resetUATLayers() {
 }
 
 resetViewBtn.onclick = function() {
+  map.removeLayer(osmLayer);
+  map.removeLayer(satelliteLayer);
+  if (!map.hasLayer(blankLayer)) blankLayer.addTo(map);
+
   map.setView([45.9, 24.9], 7, { animate: false });
   if (selectedJudetLayer) {
     layerJudete.resetStyle(selectedJudetLayer);
     selectedJudetLayer = null;
   }
-  // daca suntem in modul UAT, zoom 7 < MIN_UAT_LABEL_ZOOM => ascunde labeluri
-  // zoomend se va ocupa automat, dar cu animate:false nu se declanseaza intotdeauna
   if (uatActive) {
     map.getContainer().classList.add('labels-hidden');
   }
 };
+
 
 // ================== RESET ==================
 backBtn.onclick = function() {
@@ -352,5 +355,6 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
