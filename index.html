@@ -175,36 +175,27 @@
       cursor: pointer;
     }
 
-    /* ===== Scară ===== */
-    .leaflet-control-scale {
-      border: none !important;
-      border-radius: 8px !important;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.18) !important;
-      overflow: hidden;
-    }
+/* ===== Scară ===== */
+.leaflet-control-scale {
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
 
-    .leaflet-control-scale::before {
-      content: "Scară";
-      display: block;
-      background: #2c6fad;
-      color: white;
-      font-weight: 700;
-      font-size: 12px;
-      font-family: Arial, sans-serif;
-      padding: 8px 12px;
-      letter-spacing: 0.4px;
-    }
+.leaflet-control-scale-line {
+  background: white;
+  border: 2px solid #2c6fad !important;
+  border-top: none !important;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2c6fad;
+  padding: 3px 8px 5px 8px;
+  border-radius: 0 0 6px 6px;
+  box-shadow: none !important;
+}
 
-    .leaflet-control-scale-line {
-      border: none !important;
-      border-radius: 0 0 4px 4px;
-      box-shadow: none !important;
-      background: white;
-      font-family: Arial, sans-serif;
-      font-size: 11px;
-      color: #333;
-      padding: 4px 12px 6px 12px;
-    }
 
   </style>
 </head>
@@ -231,3 +222,4 @@
 
 </body>
 </html>
+
