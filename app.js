@@ -1,6 +1,8 @@
 // ================== INIT WRAPPER ==================
 if (document.getElementById('apysis-map')) {
 
+var BASE_ROOT = (document.getElementById('apysis-map').getAttribute('data-base-root') || '').replace(/\/$/, '') + '/';
+
 // ================== UTILS ==================
 function norm(txt) {
   var s = txt.toString().trim().toUpperCase().normalize("NFD");
@@ -274,7 +276,7 @@ backBtn.onclick = function() {
 };
 
 // ================== JUDETE ==================
-fetch('judete.geojson')
+fetch(BASE_ROOT + 'judete.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
     layerJudete = L.geoJSON(data, {
@@ -318,7 +320,7 @@ function afiseazaUAT(judetSelectat) {
   if (layerJudete) map.removeLayer(layerJudete);
   resetUATLayers();
 
-  var fileName = 'uat_judete/uat_' + norm(judetSelectat) + '.geojson';
+  var fileName = BASE_ROOT + 'uat_judete/uat_' + norm(judetSelectat) + '.geojson';
 
   fetch(fileName)
     .then(function(r) { return r.json(); })
