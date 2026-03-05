@@ -294,28 +294,23 @@ fetch('judete.geojson')
         layer.on('mouseout', function() {
           layer.setStyle({ weight: 2.5, fillOpacity: 0.9 });
         });
-layer.on('click', function() {
-  if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
-  selectedJudetLayer = layer;
-  layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
-
-  console.log('click judet, zoom inainte:', map.getZoom()); // test incarcare
-  map.fitBounds(layer.getBounds(), { 
-    paddingTopLeft: [200, 10], 
-    paddingBottomRight: [20, 20],
-    animate: false
-  });
-  if (map.getZoom() > 9) map.setZoom(9, { animate: false });
-
-  afiseazaUAT(feature.properties.Judet);
-});
-
-
-
+        layer.on('click', function() {
+          if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
+          selectedJudetLayer = layer;
+          layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
+          map.fitBounds(layer.getBounds(), {
+            paddingTopLeft: [200, 10],
+            paddingBottomRight: [20, 20],
+            animate: false
+          });
+          if (map.getZoom() > 9) map.setZoom(9, { animate: false });
+          afiseazaUAT(feature.properties.Judet);
+        });
       }
     }).addTo(map);
     layerControl.addOverlay(layerJudete, 'Județe');
   });
+;
 
 // ================== UAT ==================
 function afiseazaUAT(judetSelectat) {
@@ -379,6 +374,7 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
 
