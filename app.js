@@ -235,19 +235,32 @@ function resetUATLayers() {
 }
 
 resetViewBtn.onclick = function() {
-  map.removeLayer(osmLayer);
-  map.removeLayer(satelliteLayer);
-  if (!map.hasLayer(blankLayer)) blankLayer.addTo(map);
+  // 1. Ieși din modul UAT
+  uatActive = false;
+  resetUATLayers();
+  backBtn.style.display = 'none';
 
-  map.setView([45.9, 24.9], 7, { animate: false });
+  // 2. Reafișează județele
+  if (layerJudete && !map.hasLayer(layerJudete)) layerJudete.addTo(map);
+
+  // 3. Resetează județ selectat
   if (selectedJudetLayer) {
     layerJudete.resetStyle(selectedJudetLayer);
     selectedJudetLayer = null;
   }
-  if (uatActive) {
-    map.getContainer().classList.add('labels-hidden');
-  }
+
+  // 4. Fundal gol
+  map.removeLayer(osmLayer);
+  map.removeLayer(satelliteLayer);
+  if (!map.hasLayer(blankLayer)) blankLayer.addTo(map);
+
+  // 5. Centrare România
+  map.setView([45.9, 24.9], 7, { animate: false });
+
+  // 6. Ascunde labeluri UAT
+  map.getContainer().classList.add('labels-hidden');
 };
+
 
 
 // ================== RESET ==================
@@ -355,6 +368,7 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
 
