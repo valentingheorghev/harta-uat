@@ -295,18 +295,18 @@ fetch('judete.geojson')
           layer.setStyle({ weight: 2.5, fillOpacity: 0.9 });
         });
         layer.on('click', function() {
-          if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
-          selectedJudetLayer = layer;
-          layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
-map.fitBounds(layer.getBounds(), { 
-  paddingTopLeft: [200, 10], 
-  paddingBottomRight: [20, 20], 
-  animate: false, 
-  maxZoom: 9 
+  if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
+  selectedJudetLayer = layer;
+  layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
+  map.fitBounds(layer.getBounds(), { 
+    paddingTopLeft: [200, 10], 
+    paddingBottomRight: [20, 20],
+    animate: false
+  });
+  if (map.getZoom() > 9) map.setZoom(9, { animate: false });
+  afiseazaUAT(feature.properties.Judet);
 });
 
-          afiseazaUAT(feature.properties.Judet);
-        });
       }
     }).addTo(map);
     layerControl.addOverlay(layerJudete, 'Județe');
@@ -374,6 +374,7 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
 
 
 
