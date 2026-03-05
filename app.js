@@ -172,12 +172,19 @@ L.control.scale({ imperial: false }).addTo(map);
 var MIN_UAT_LABEL_ZOOM = 10;
 var uatActive = false;
 
+// zoomend gestioneaza labelurile bazat pe zoom si starea uatActive
 map.on('zoomend', function() {
-  if (uatActive) return;
   var c = map.getContainer();
-  if (map.getZoom() >= MIN_UAT_LABEL_ZOOM) {
-    c.classList.remove('labels-hidden');
+  var z = map.getZoom();
+  if (uatActive) {
+    // in modul UAT: arata labeluri doar la zoom >= MIN_UAT_LABEL_ZOOM
+    if (z >= MIN_UAT_LABEL_ZOOM) {
+      c.classList.remove('labels-hidden');
+    } else {
+      c.classList.add('labels-hidden');
+    }
   } else {
+    // in modul judete: ascunde intotdeauna labelurile UAT
     c.classList.add('labels-hidden');
   }
 });
@@ -209,7 +216,7 @@ var resetViewBtn = document.getElementById('resetViewBtn');
 
 function resetUATLayers() {
   uatLabelsGroup.clearLayers();
-  map.removeLayer(uatLabelsGroup);
+  if (map.hasLayer(uatLabelsGroup)) map.removeLayer(uatLabelsGroup);
   uatLabels = [];
   if (layerUAT) {
     layerControl.removeLayer(layerUAT);
@@ -224,8 +231,10 @@ resetViewBtn.onclick = function() {
     layerJudete.resetStyle(selectedJudetLayer);
     selectedJudetLayer = null;
   }
+  // daca suntem in modul UAT, zoom 7 < MIN_UAT_LABEL_ZOOM => ascunde labeluri
+  // zoomend se va ocupa automat, dar cu animate:false nu se declanseaza intotdeauna
   if (uatActive) {
-    map.getContainer().classList.remove('labels-hidden'); // ← adaugă asta
+    map.getContainer().classList.add('labels-hidden');
   }
 };
 
@@ -264,7 +273,7 @@ fetch('judete.geojson')
           if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
           selectedJudetLayer = layer;
           layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
-          map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+          map.fitBounds(layer.getBounds(), { padding: [20, 20], animate: false });
           afiseazaUAT(feature.properties.Judet);
         });
       }
@@ -334,4 +343,3 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
-
