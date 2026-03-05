@@ -2,7 +2,7 @@
 if (document.getElementById('apysis-map')) {
 
 var BASE_ROOT = (document.getElementById('apysis-map').getAttribute('data-base-root') || '').replace(/\/$/, '') + '/';
-
+ 
 // ================== UTILS ==================
 function norm(txt) {
   var s = txt.toString().trim().toUpperCase().normalize("NFD");
