@@ -219,14 +219,14 @@ function resetUATLayers() {
 }
 
 resetViewBtn.onclick = function() {
-  uatActive = false;
-  resetUATLayers();
-  map.getContainer().classList.add('labels-hidden');
+  map.setView([45.9, 24.9], 7, { animate: false });
   if (selectedJudetLayer) {
     layerJudete.resetStyle(selectedJudetLayer);
     selectedJudetLayer = null;
   }
-  map.setView([45.9, 24.9], 7, { animate: false });
+  if (uatActive) {
+    map.getContainer().classList.remove('labels-hidden'); // ← adaugă asta
+  }
 };
 
 // ================== RESET ==================
@@ -334,3 +334,4 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
