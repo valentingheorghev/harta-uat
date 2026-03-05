@@ -23,12 +23,15 @@ function stringToHash(str) {
   return Math.abs(hash);
 }
 
-function getBlueFromName(name) {
+var MAP_COLORS = [
+  '#004494', '#193662', '#2E5AAC', '#DEE1E8',
+  'rgb(236,241,247)', 'rgb(230,237,245)', 'rgb(174,196,221)',
+  'rgb(224,232,242)', 'rgb(93,136,187)', 'rgb(56,109,171)'
+];
+
+function getColorFromName(name) {
   var hash = stringToHash(norm(name));
-  var hue = 210;
-  var saturation = 60 + (hash % 20);
-  var lightness = 45 + (hash % 15);
-  return 'hsl(' + hue + ',' + saturation + '%,' + lightness + '%)';
+  return MAP_COLORS[hash % MAP_COLORS.length];
 }
 
 function formatUATName(name) {
@@ -204,19 +207,19 @@ legend.onAdd = function() {
            'border:1px solid rgba(0,0,0,0.3);margin-right:8px;flex-shrink:0;border-radius:2px;';
 
   div.innerHTML =
-    '<div style="background:#2c6fad;color:white;font-weight:700;font-size:12px;' +
+    '<div style="background:#193662;color:white;font-weight:700;font-size:12px;' +
     'padding:8px 12px;letter-spacing:0.4px;">Legend\u0103</div>' +
     '<div style="padding:8px 12px 10px 12px;">' +
       '<div style="display:flex;align-items:center;padding:3px 0;">' +
-        '<span style="' + sq + 'background:hsl(210,70%,55%);"></span>Jude\u021be' +
-      '</div>' +
-      '<div style="display:flex;align-items:center;padding:3px 0;">' +
-        '<span style="' + sq + 'background:#ffe599;border-color:rgba(0,0,0,0.4);"></span>UAT' +
+        '<span style="' + sq + 'background:#004494;"></span>' +
+        '<span style="' + sq + 'background:#193662;"></span>' +
+        '<span style="' + sq + 'background:#2E5AAC;"></span>' +
+        '<span style="' + sq + 'background:#DEE1E8;"></span>Jude\u021be / UAT' +
       '</div>' +
     '</div>';
   return div;
 }
-legend.addTo(map);
+// legend.addTo(map);
 
 // ================== STATE ==================
 var layerJudete = null, layerUAT = null;
@@ -281,20 +284,20 @@ fetch(BASE_ROOT + 'judete.geojson')
   .then(function(data) {
     layerJudete = L.geoJSON(data, {
       style: function(feature) {
-        var color = getBlueFromName(feature.properties.Judet);
+        var color = getColorFromName(feature.properties.Judet);
         feature.properties._color = color;
-        return { color: '#ffffff', weight: 2.5, fillColor: color, fillOpacity: 0.9 };
+        return { color: '#ffffff', weight: 4, fillColor: color, fillOpacity: 0.9 };
       },
       onEachFeature: function(feature, layer) {
         layer.bindTooltip(feature.properties.Judet, {
           permanent: true, direction: 'center', className: 'label-judet'
         });
         layer.on('mouseover', function() {
-          layer.setStyle({ weight: 4, fillOpacity: 1 });
+          layer.setStyle({ weight: 5, fillOpacity: 1 });
           layer.bringToFront();
         });
         layer.on('mouseout', function() {
-          layer.setStyle({ weight: 2.5, fillOpacity: 0.9 });
+          layer.setStyle({ weight: 4, fillOpacity: 0.9 });
         });
         layer.on('click', function() {
           if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
@@ -303,9 +306,9 @@ fetch(BASE_ROOT + 'judete.geojson')
           map.fitBounds(layer.getBounds(), {
             paddingTopLeft: [200, 10],
             paddingBottomRight: [20, 20],
-            animate: false
+            animate: false,
+            maxZoom: 9
           });
-          if (map.getZoom() > 9) map.setZoom(9, { animate: false });
           afiseazaUAT(feature.properties.Judet);
         });
       }
@@ -329,7 +332,11 @@ function afiseazaUAT(judetSelectat) {
 
       layerUAT = L.geoJSON(data, {
         renderer: canvasRenderer,
-        style: { color: '#000', weight: 1.5, fillColor: '#ffe599', fillOpacity: 0.9 },
+        style: function(feature) {
+          var color = getColorFromName(feature.properties.UAT || '');
+          feature.properties._color = color;
+          return { color: '#ffffff', weight: 4, fillColor: color, fillOpacity: 0.9 };
+        },
         onEachFeature: function(feature, layer) {
           var labelLatLng = getLabelLatLng(feature, layer);
 
@@ -347,13 +354,13 @@ function afiseazaUAT(judetSelectat) {
           uatLabels.push(label);
 
           layer.on('mouseover', function() {
-            layer.setStyle({ fillColor: '#f1c232', weight: 3 });
+            layer.setStyle({ fillOpacity: 1, weight: 5 });
             layer.bringToFront();
             var el = label.getElement();
             if (el) el.querySelector('.label-uat').classList.add('label-hover');
           });
           layer.on('mouseout', function() {
-            layer.setStyle({ fillColor: '#ffe599', weight: 1.5 });
+            layer.setStyle({ fillColor: feature.properties._color, fillOpacity: 0.9, weight: 4 });
             var el = label.getElement();
             if (el) el.querySelector('.label-uat').classList.remove('label-hover');
           });
@@ -375,6 +382,17 @@ function afiseazaUAT(judetSelectat) {
       console.error('Eroare la încărcarea UAT pentru: ' + judetSelectat, e);
     });
 }
+// ================== RESIZE HANDLER ==================
+window.addEventListener('resize', function() {
+  map.invalidateSize();
+});
+
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(function() {
+    map.invalidateSize();
+  }).observe(document.getElementById('apysis-map'));
+}
+
 } // END init wrapper
 
 
