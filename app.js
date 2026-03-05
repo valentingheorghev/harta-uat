@@ -150,14 +150,14 @@ var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   updateWhenIdle: true,
   updateWhenZooming: false,
   keepBuffer: 2
-}).addTo(map);
+});
 
 var satelliteLayer = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   { attribution: 'Tiles © Esri', maxZoom: 19 }
 );
 
-var blankLayer = L.tileLayer('', { attribution: '' });
+var blankLayer = L.tileLayer('', { attribution: '' }).addTo(map);
 
 // ================== LAYER CONTROL ==================
 var layerControl = L.control.layers(
@@ -352,3 +352,4 @@ function afiseazaUAT(judetSelectat) {
     });
 }
 } // END init wrapper
+
