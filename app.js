@@ -2,6 +2,7 @@
 if (document.getElementById('apysis-map')) {
 
 var BASE_ROOT = (document.getElementById('apysis-map').getAttribute('data-base-root') || '').replace(/\/$/, '') + '/';
+ console.log('BASE_ROOT:', BASE_ROOT);
  
 // ================== UTILS ==================
 function norm(txt) {
@@ -397,6 +398,7 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 } // END init wrapper
+
 
 
 
