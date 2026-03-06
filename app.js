@@ -347,7 +347,7 @@ fetch(BASE_ROOT + 'judete.geojson')
       style: function(feature) {
         var color = getColorFromName(feature.properties.Judet);
         feature.properties._color = color;
-        return { color: '#ffffff', weight: 4, fillColor: color, fillOpacity: 0.9 };
+        return { color: '#dddddd', weight: 4, fillColor: color, fillOpacity: 0.9 };
       },
       onEachFeature: function(feature, layer) {
         layer.bindTooltip(feature.properties.Judet, {
@@ -407,7 +407,7 @@ function afiseazaUAT(judetSelectat) {
         style: function(feature) {
           var color = getColorFromName(feature.properties.UAT || '');
           feature.properties._color = color;
-          return { color: '#ffffff', weight: 4, fillColor: color, fillOpacity: 0.9 };
+          return { color: '#dddddd', weight: 4, fillColor: color, fillOpacity: 0.9 };
         },
         onEachFeature: function(feature, layer) {
           var labelLatLng = getLabelLatLng(feature, layer);
