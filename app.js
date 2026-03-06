@@ -154,7 +154,7 @@ var map = L.map('apysis-map', {
 });
 
 if (isMobile) {
-  map.setView([45.9, 24.9], 9, { animate: false });  // zoom mai mare pe mobil
+  map.setView([45.9, 24.9], 6, { animate: false });  // zoom mai mare pe mobil
 } else {
   map.setView([45.9, 24.9], 7, { animate: false });  // cum era pe desktop
 }
@@ -478,6 +478,7 @@ window.addEventListener('load', function() {
 });
 
 } // END init wrapper
+
 
 
 
