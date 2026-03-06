@@ -1,4 +1,5 @@
 // ================== INIT WRAPPER ==================
+if (document.getElementById('apysis-map')) {
 var BASE_ROOT;
 if (window.location.hostname === 'gis-geolabs.github.io') {
   BASE_ROOT = '/harta-uat/';
@@ -472,6 +473,7 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 } // END init wrapper
+
 
 
 
