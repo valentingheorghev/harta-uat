@@ -175,8 +175,26 @@ var blankLayer = L.tileLayer('', { attribution: '' }).addTo(map);
   var activeBaseLayer = blankLayer;  // ← retine stratul activ curent
 
 map.on('baselayerchange', function(e) {
-  activeBaseLayer = e.layer;  // ← actualizeaza cand utilizatorul schimba fundalul
+  activeBaseLayer = e.layer;
+
+  var chk = document.getElementById('toggle-transparent');
+  if (!chk) return;
+
+  var transparent = (e.layer !== blankLayer);  // OSM sau Satelit -> true, Fără fundal -> false
+  chk.checked = transparent;
+
+  if (layerJudete) {
+    layerJudete.eachLayer(function(l) {
+      l.setStyle({ fillOpacity: transparent ? 0 : 0.9 });
+    });
+  }
+  if (layerUAT) {
+    layerUAT.eachLayer(function(l) {
+      l.setStyle({ fillOpacity: transparent ? 0 : 0.9 });
+    });
+  }
 });
+
 
 // ================== LAYER CONTROL ==================
 var layerControl = L.control.layers(
@@ -458,6 +476,7 @@ window.addEventListener('load', function() {
 });
 
 } // END init wrapper
+
 
 
 
