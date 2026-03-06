@@ -308,17 +308,26 @@ fetch(BASE_ROOT + 'judete.geojson')
         layer.on('mouseout', function() {
           layer.setStyle({ weight: 4, fillOpacity: 0.9 });
         });
-        layer.on('click', function() {
-          if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
-          selectedJudetLayer = layer;
-          layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
-          map.fitBounds(layer.getBounds(), {
-            paddingTopLeft: [200, 10],
-            paddingBottomRight: [20, 20],
-            animate: false,
-          });
-          afiseazaUAT(feature.properties.Judet);
-        });
+layer.on('click', function() {
+  if (selectedJudetLayer) layerJudete.resetStyle(selectedJudetLayer);
+  selectedJudetLayer = layer;
+  layer.setStyle({ weight: 5, color: '#000', fillOpacity: 1 });
+
+  var p = feature.properties;
+  if (p.CenterLat && p.CenterLng && p.ZoomLevel) {
+    // foloseste centrul si zoom-ul din GeoJSON
+    map.setView([p.CenterLat, p.CenterLng], p.ZoomLevel, { animate: false });
+  } else {
+    // fallback automat pentru restul judetelor
+    map.fitBounds(layer.getBounds(), {
+      paddingTopLeft: [200, 10],
+      paddingBottomRight: [20, 20],
+      animate: false
+    });
+  }
+  afiseazaUAT(feature.properties.Judet);
+});
+
       }
     }).addTo(map);
     layerControl.addOverlay(layerJudete, 'Județe');
@@ -401,6 +410,7 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 } // END init wrapper
+
 
 
 
