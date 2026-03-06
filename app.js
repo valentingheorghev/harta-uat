@@ -143,7 +143,6 @@ function getLabelLatLng(feature, layer) {
 }
 
 // ================== MAP ==================
-// ================== MAP ==================
 var romaniaBounds = L.latLngBounds([43.5, 19.0], [48.5, 30.5]);
 var isMobile = window.innerWidth < 768;
 
@@ -157,7 +156,6 @@ if (isMobile) {
   map.fitBounds([[43.5, 19.0], [48.5, 30.5]], { padding: [20, 20] });
   map.setZoom(map.getZoom() + 1, { animate: false });
 }
-
 
 // ================== BASE LAYERS ==================
 var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -311,38 +309,6 @@ if (toggleTransparent) {
   });
 }
 
-
-
-// ================== RESET ==================
-uatActive = false;
-resetUATLayers();
-
-if (selectedJudetLayer) {
-  layerJudete.resetStyle(selectedJudetLayer);
-  selectedJudetLayer = null;
-}
-if (layerJudete && !map.hasLayer(layerJudete)) layerJudete.addTo(map);
-
-// ← AICI NOUL RESET COMPLET
-document.getElementById('toggle-transparent').checked = false;
-layerJudete.eachLayer(function(layer) { layer.setStyle({ fillOpacity: 0.9 }); });
-map.removeLayer(osmLayer);
-map.removeLayer(satelliteLayer);
-map.removeLayer(blankLayer);
-blankLayer.addTo(map);
-activeBaseLayer = blankLayer;
-
-if (isMobile) {
-  map.fitBounds([[43.5, 19.0], [48.5, 30.5]], { padding: [20, 20], animate: false });
-} else {
-  map.setView([45.9, 24.9], 7, { animate: false });
-}
-
-backBtn.style.display = 'none';
-history.pushState('', document.title, window.location.pathname);
-map.getContainer().classList.add('labels-hidden');
-
-
 // ================== JUDETE ==================
 fetch(BASE_ROOT + 'judete.geojson')
   .then(function(r) { return r.json(); })
@@ -492,6 +458,7 @@ window.addEventListener('load', function() {
 });
 
 } // END init wrapper
+
 
 
 
