@@ -144,7 +144,7 @@ function getLabelLatLng(feature, layer) {
 }
 
 // ================== MAP ==================
-var romaniaBounds = L.latLngBounds([43.5, 20.0], [48.5, 30.5]);
+var romaniaBounds = L.latLngBounds([43.5, 19.0], [48.5, 30.5]);
 
 var map = L.map('apysis-map', {
   minZoom: 6,
@@ -411,6 +411,7 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 } // END init wrapper
+
 
 
 
