@@ -268,11 +268,10 @@ resetViewBtn.onclick = function() {
   if (layerJudete && !map.hasLayer(layerJudete)) layerJudete.addTo(map);
 
   // 4. Păstrează fundalul activ
-  if (!map.hasLayer(activeBaseLayer)) {
-    map.removeLayer(osmLayer);
-    map.removeLayer(satelliteLayer);
-    map.removeLayer(blankLayer);
-    activeBaseLayer.addTo(map);
+map.removeLayer(osmLayer);
+map.removeLayer(satelliteLayer);
+map.removeLayer(blankLayer);
+activeBaseLayer.addTo(map);
   }
 
   // 5. Centrare România
@@ -302,11 +301,10 @@ document.getElementById('toggle-transparent').addEventListener('change', functio
 backBtn.onclick = function() {
   uatActive = false;
   resetUATLayers();
-  if (!map.hasLayer(activeBaseLayer)) {
-  map.removeLayer(osmLayer);
-  map.removeLayer(satelliteLayer);
-  map.removeLayer(blankLayer);
-  activeBaseLayer.addTo(map);
+map.removeLayer(osmLayer);
+map.removeLayer(satelliteLayer);
+map.removeLayer(blankLayer);
+activeBaseLayer.addTo(map);
 }
   if (selectedJudetLayer) {
     layerJudete.resetStyle(selectedJudetLayer);
@@ -453,6 +451,7 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 } // END init wrapper
+
 
 
 
